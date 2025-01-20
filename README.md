@@ -7,9 +7,11 @@
 - `vagrant ssh $NAME` : Connect to VM via SSH with his name
 - `vagrant provision` : Update the VM with the modifications in the Vagrantfile
 - `vboxmanage list vms` : list all vms created by vagrant on the vbox
-- `kubctl get nodes` : list all the nodes connected to the controller
+- `kubectl get nodes` : list all the nodes
+- `vagrant reload` : to delete all machines and re-up them
 
 ```bash
 #to delete all the vms
 VBoxManage list vms | awk -F'"' '{print $2}' | while read vm; do VBoxManage unregistervm "$vm" --delete; done
 ```
+

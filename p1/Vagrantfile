@@ -1,33 +1,53 @@
 Vagrant.configure("2") do |config|
-  # setup ressources and VMs
-  config.vm.box = "hashicorp/bionic64"
-  config.vm.provider "virtualbox" do |v|
-    v.memory = 512
-    v.cpus = 1
-  end
+  config.vm.box = "archlinux/archlinux"
   
-  config.vm.define "dboire" do |dboire|
-    dboire.vm.hostname = "server1S"
-    config.vm.network "private_network", ip: "192.168.56.110"
-    dboire.vm.provision "shell", inline: <<-SHELL
-      echo "Installing k3s as controller"
-      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
-      echo "K3s controller installed successfully."
+  config.vm.define "dboireS" do |controller|
+    controller.vm.hostname = "dboireS"
+    controller.vm.provider "virtualbox" do |v|
+      v.memory = 512
+      v.cpus = 1
+      v.name = "dboireS"
+    end
+    controller.vm.network "private_network", ip: "192.168.56.110", interface: "eth1"
+    controller.vm.provision "shell", inline: <<-SHELL
+      if [ ! -f /usr/local/bin/k3s ]; then
+        echo "Installing k3s as controller"
+        curl -sSL https://get.k3s.io | sh -s - server --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --node-name dboireS
+        echo "K3s controller installed successfully."
+      else
+        echo "K3s controller already installed."
+      fi
+      echo CURRENT_IP = $(ip a show eth1 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+      cp /var/lib/rancher/k3s/server/token /vagrant/k3s_token
+      #kubectl get nodes
     SHELL
   end
 
-  config.vm.define "hbelle" do |hbelle|
-    hbelle.vm.hostname = "server2SW"
-    config.vm.network "private_network", ip: "192.168.56.111"
-    hbelle.vm.provision "shell", inline: <<-SHELL
-      echo "Installing k3s as agent"
-      #connect to the k3s controller with the IP 192.168.56.111 644
-      ping -c 4 192.168.56.110
-      while ! nc -z 192.168.56.110 644; do sleep 2; done
-      TOKEN=$(vagrant ssh dboire -c "sudo cat /var/lib/rancher/k3s/server/node-token")
-      curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:644 K3S_TOKEN=$TOKEN sh -
-      echo "K3s serverworker installed successfully and joined the controller."
-    SHELL
+  config.vm.define "hbelleSW" do |worker|
+    worker.vm.hostname = "hbelleSW"
+    worker.vm.provider "virtualbox" do |v|
+      v.memory = 512
+      v.cpus = 1
+      v.name = "hbelleSW"
+    end
+    worker.vm.network "private_network", ip: "192.168.56.111", interface: "eth1"
+    worker.vm.provision "shell", inline: <<-SHELL
+    echo "Installing k3s as agent"
+    while [ ! -f /vagrant/k3s_token ]; do sleep 1; done
+    K3S_TOKEN=$(cat /vagrant/k3s_token)
+    while true; do
+      curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN=$K3S_TOKEN sh -s - agent --node-ip 192.168.56.111 --node-name hbelleSW
+      if [ $? -eq 0 ]; then
+        echo "Successfully joined the cluster."
+        break
+      else
+        echo "Failed to join the cluster. Retrying in 2 seconds..."
+        sleep 2
+      fi
+    done
+    
+    echo CURRENT_IP = $(ip a show eth1 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+  SHELL
+  
   end
-
 end
