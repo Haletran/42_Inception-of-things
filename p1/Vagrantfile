@@ -1,65 +1,36 @@
+## VARIABLES
+CONTROLLER_IP = "192.168.56.110"
+WORKER_IP = "192.168.56.111"
+
+CONTROLLER_NAME = "bapasquiS"
+WORKER_NAME = "bapasquiSW"
+
+MEM = 1024
+CORE = 1
+
+## VAGRANT CONFIG
 Vagrant.configure("2") do |config|
   config.vm.box = "archlinux/archlinux"
   
-  config.vm.define "bapasquiS" do |controller|
-    controller.vm.hostname = "bapasquiS"
+  config.vm.define CONTROLLER_NAME do |controller|
+    controller.vm.hostname = CONTROLLER_NAME
     controller.vm.provider "virtualbox" do |v|
-      v.memory = 512
-      v.cpus = 1
-      v.name = "bapasquiS"
+      v.memory = MEM
+      v.cpus = CORE
+      v.name = CONTROLLER_NAME
     end
-    controller.vm.network "private_network", ip: "192.168.56.110", interface: "eth1"
-    controller.vm.provision "shell", inline: <<-SHELL
-      if [ ! -f /usr/local/bin/k3s ]; then
-        echo "Installing k3s as controller"
-        curl -sSL https://get.k3s.io | sh -s - server --write-kubeconfig-mode 644 --node-ip 192.168.56.110 --node-name bapasquiS
-        echo "K3s controller installed successfully."
-      else
-        echo "K3s controller already installed."
-      fi
-      echo CURRENT_IP = $(ip a show eth1 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
-      if [ -f /vagrant/k3s_token ]; then
-        rm /vagrant/k3s_token
-      fi
-      cp /var/lib/rancher/k3s/server/token /vagrant/k3s_token
-    SHELL
+    controller.vm.network "private_network", type: "static", ip: CONTROLLER_IP
+    controller.vm.provision "shell", path: "scripts/controller.sh", args: [CONTROLLER_IP]
   end
 
-  config.vm.define "bapasquiSW" do |worker|
-    worker.vm.hostname = "bapasquiSW"
+  config.vm.define WORKER_NAME do |worker|
+    worker.vm.hostname = WORKER_NAME
     worker.vm.provider "virtualbox" do |v|
-      v.memory = 512
-      v.cpus = 1
-      v.name = "bapasquiSW"
+      v.memory = MEM 
+      v.cpus = CORE
+      v.name = WORKER_NAME
     end
-    worker.vm.network "private_network", ip: "192.168.56.111", interface: "eth1"
-    worker.vm.provision "shell", inline: <<-SHELL
-    echo "Installing k3s as agent"
-    while [ ! -f /vagrant/k3s_token ]; do sleep 1; done
-    K3S_TOKEN=$(cat /vagrant/k3s_token)
-    cat /vagrant/k3s_token
-    if ping -c 1 192.168.56.110 > /dev/null 2>&1; then
-      echo "Controller is up"
-    else 
-      echo "Controller is down"
-    fi
-    if [ ! -f /usr/local/bin/k3s ]; then
-      while true; do
-        curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN=$K3S_TOKEN sh -s - agent --node-ip 192.168.56.111 --node-name bapasquiSW
-        if [ $? -eq 0 ]; then
-          echo "Successfully joined the cluster."
-          break
-        else
-          echo "Failed to join the cluster. Retrying in 2 seconds..."
-          sleep 2
-        fi
-      done
-    else 
-      echo "K3s agent already installed."
-    fi
-    
-    echo CURRENT_IP = $(ip a show eth1 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
-  SHELL
-  
+    worker.vm.network "private_network", type: "static", ip: WORKER_IP
+    worker.vm.provision "shell", path: "scripts/worker.sh", args: [CONTROLLER_IP, WORKER_IP]
   end
 end
