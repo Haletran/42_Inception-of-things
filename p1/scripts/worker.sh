@@ -16,6 +16,7 @@ while [ ! -f /vagrant/k3s_token ]; do
 done
 curl -sfL https://get.k3s.io | sh -
 echo CURRENT_IP = $(ip a show eth1 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+echo "alias coco='ip a show eth1'" >> /etc/profile.d/00-aliases.sh
 rm -rf /vagrant/k3s_token
 
 echo "k3s agent installed"

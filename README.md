@@ -23,3 +23,11 @@ VBoxManage list vms | awk -F'"' '{print $2}' | while read vm; do VBoxManage unre
 #faster DL speed
 vagrant plugin install vagrant-cachier 
 ```
+
+> For the ssh connection, use the private key in the .vagrant folder, located at :
+`.vagrant/machines/NAME_OF_THE_VM/virtualbox/private_key`
+
+```bash
+ssh -i .vagrant/machines/bapasquiS/virtualbox/private_key vagrant@192.168.56.110
+ssh -i .vagrant/machines/bapasquiSW/virtualbox/private_key vagrant@192.168.56.111
+```
