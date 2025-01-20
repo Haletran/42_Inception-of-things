@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
+  # setup ressources and VMs
   config.vm.box = "hashicorp/bionic64"
-
   config.vm.provider "virtualbox" do |v|
     v.memory = 512
     v.cpus = 1
@@ -10,7 +10,9 @@ Vagrant.configure("2") do |config|
     dboire.vm.hostname = "server1S"
     config.vm.network "private_network", ip: "192.168.56.110"
     dboire.vm.provision "shell", inline: <<-SHELL
-    #curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -
+      echo "Installing k3s as controller"
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
+      echo "K3s controller installed successfully."
     SHELL
   end
 
@@ -18,7 +20,13 @@ Vagrant.configure("2") do |config|
     hbelle.vm.hostname = "server2SW"
     config.vm.network "private_network", ip: "192.168.56.111"
     hbelle.vm.provision "shell", inline: <<-SHELL
-    #curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" sh -
+      echo "Installing k3s as agent"
+      #connect to the k3s controller with the IP 192.168.56.111 644
+      ping -c 4 192.168.56.110
+      while ! nc -z 192.168.56.110 644; do sleep 2; done
+      TOKEN=$(vagrant ssh dboire -c "sudo cat /var/lib/rancher/k3s/server/node-token")
+      curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:644 K3S_TOKEN=$TOKEN sh -
+      echo "K3s serverworker installed successfully and joined the controller."
     SHELL
   end
 
