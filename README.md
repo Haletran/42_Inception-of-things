@@ -31,3 +31,8 @@ vagrant plugin install vagrant-cachier
 ssh -i .vagrant/machines/bapasquiS/virtualbox/private_key vagrant@192.168.56.110
 ssh -i .vagrant/machines/bapasquiSW/virtualbox/private_key vagrant@192.168.56.111
 ```
+
+```bash
+#launch the project on the main pc (this could take a while), this will slow down your computer like crazy
+NIXPKGS_ALLOW_UNFREE=1 nix-shell flake.nix
+```
