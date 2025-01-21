@@ -21,7 +21,6 @@ Vagrant.configure("2") do |config|
     end
     controller.vm.network "private_network", type: "static", ip: CONTROLLER_IP
     controller.vm.provision "shell", path: "scripts/controller.sh", args: [CONTROLLER_IP]
-    end
   end
 
   config.vm.define WORKER_NAME do |worker|
