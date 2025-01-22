@@ -11,5 +11,6 @@ pkgs.mkShell {
   shellHook = ''
     echo "Vagrant and VirtualBox are set up!"
     echo "Run 'vagrant --version' to confirm."
+    vagrant plugin install vagrant-cachier
   '';
 }

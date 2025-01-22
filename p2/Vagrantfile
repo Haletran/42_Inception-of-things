@@ -1,0 +1,24 @@
+## VARIABLES
+CONTROLLER_IP = "192.168.56.110"
+
+CONTROLLER_NAME = "bapasquiS"
+
+MEM = 1024
+CORE = 1
+
+## VAGRANT CONFIG
+Vagrant.configure("2") do |config|
+  config.vm.box = "archlinux/archlinux"
+  
+  config.vm.define CONTROLLER_NAME do |controller|
+    controller.vm.hostname = CONTROLLER_NAME
+    controller.vm.provider "virtualbox" do |v|
+      v.memory = MEM
+      v.cpus = CORE
+      v.name = CONTROLLER_NAME
+    end
+    controller.vm.network "private_network", type: "static", ip: CONTROLLER_IP
+    controller.vm.provision "shell", path: "scripts/controller.sh", args: [CONTROLLER_IP]
+    controller.vm.provision "shell", path: "scripts/setup.sh"
+  end
+end
