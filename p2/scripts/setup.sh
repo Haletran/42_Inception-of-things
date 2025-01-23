@@ -4,6 +4,7 @@
 
 
 kubectl apply -f /vagrant/confs/apps.yaml
+kubectl apply -f /vagrant/confs/ingress.yaml
 echo "DEBUG PRINT"
 
 kubectl get all
