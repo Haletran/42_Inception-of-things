@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
       v.cpus = CORE
       v.name = CONTROLLER_NAME
     end
-    controller.vm.network "private_network", type: "static", ip: CONTROLLER_IP
+    controller.vm.network "private_network", type: "static", ip: CONTROLLER_IP, interface: "eth1"
     controller.vm.provision "shell", path: "scripts/server.sh", args: [CONTROLLER_IP]
     controller.vm.provision "shell", path: "scripts/setup.sh"
   end
