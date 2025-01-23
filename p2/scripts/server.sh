@@ -15,6 +15,6 @@ curl -sfL https://get.k3s.io | sh -
 cp /var/lib/rancher/k3s/server/token /vagrant/k3s_token
 echo "CURRENT_IP=$(ip a show eth1 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)"
 echo "alias k='kubectl'" >> /etc/profile.d/00-aliases.sh
-echo "alias coco='ip a show eth1'" >> /etc/profile.d/00-aliases.sh
 
 echo "k3s controller installed"
+
