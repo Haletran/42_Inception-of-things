@@ -2,8 +2,6 @@
 
 #set -x
 
-rm -rf /vagrant/confs/html
-
 sudo ip addr flush dev eth1
 sudo ip addr add $1/24 dev eth1
 sudo ip link set eth1 up

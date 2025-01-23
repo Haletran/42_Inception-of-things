@@ -14,16 +14,10 @@ spec:
     spec:
       containers:
       - name: app-one-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - name: custom-html
-          mountPath: /vagrant/confs/html/app1/index.html
-            volumes:
-            - name: custom-html
-        configMap:
-          name: custom-html-config
+        image: paulbouwer/hello-kubernetes:1.10
+        env: 
+        - name: MESSAGE
+          value: "Hello from app-one."
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -41,9 +35,10 @@ spec:
     spec:
       containers:
       - name: app-two-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        image: paulbouwer/hello-kubernetes:1.10
+        env: 
+        - name: MESSAGE
+          value: "Hello from app-two."
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -61,9 +56,10 @@ spec:
     spec:
       containers:
       - name: app-three-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        image: paulbouwer/hello-kubernetes:1.10
+        env: 
+        - name: MESSAGE
+          value: "Hello from app-three."
 ---
 apiVersion: v1
 kind: Service
@@ -75,7 +71,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 8080
   type: ClusterIP
 ---
 apiVersion: v1
@@ -88,7 +84,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 8080
   type: ClusterIP
 ---
 apiVersion: v1
@@ -101,7 +97,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 8080
   type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
