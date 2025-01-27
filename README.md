@@ -1,5 +1,6 @@
 # Inception_of_things
-## COMMANDS
+
+## COMMANDS and USEFUL stuff
 
 - `vagrant up`: Launch the VM linked to the Vagrantfile.
 - `vagrant halt`: Shutdown the VM linked to the Vagrantfile.
@@ -15,8 +16,6 @@
 # To delete all the VMs
 VBoxManage list vms | awk -F'"' '{print $2}' | while read vm; do VBoxManage unregistervm "$vm" --delete; done
 ```
-
-## USEFUL
 
 ```bash
 # Faster download speed
@@ -55,7 +54,6 @@ kubectl -n kube-system logs -l app.kubernetes.io/name=traefik
 192.168.56.110 app3.local
 ```
 
-
 ### Summary of their roles in Kubernetes:
 
 1. **Pod**: Group of containers that run your application.
@@ -68,4 +66,29 @@ kubectl -n kube-system logs -l app.kubernetes.io/name=traefik
 
 ## P3
 
-[For DOCKER HUB](https://redthunder.blog/2018/04/27/teaching-how-to-get-started-with-kubernetes-deploying-a-hello-world-app/)
+- Install `K3D` and `docker`
+- Create two namespace : 
+    1. one for ArgoCD
+    2. second one name ***dev*** will contain an application (on Github for versionning)
+
+1: 
+```bash
+## to install docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update && sudo apt-get install -y docker-ce
+sudo usermod -aG docker $USER
+
+## to install k3s
+curl -sfL https://get.k3s.io | sh -
+
+## to install k3d
+wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install sh | bash
+```
+
+2 : 
+```bash
+# setup namespaces
+kubectl create namespace dev
+kubectl create namespace argocd
+```
