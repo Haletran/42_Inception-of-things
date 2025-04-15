@@ -1,25 +1,24 @@
-# Inception_of_things
+# Inception-of-Things (IoT)
 
-## COMMANDS and USEFUL stuff
+This project aims to deepen your knowledge by making you use `K3d` and `K3s` with
+Vagrant.
 
-- `vagrant up`: Launch the VM linked to the Vagrantfile.
-- `vagrant halt`: Shutdown the VM linked to the Vagrantfile.
-- `vagrant ssh $NAME`: Connect to the VM via SSH using its name.
-- `vagrant provision`: Update the VM with the modifications in the Vagrantfile.
-- `vboxmanage list vms`: List all VMs created by Vagrant on VirtualBox.
-- `kubectl get nodes`: List all the nodes.
-- `vagrant reload`: Delete all machines and re-up them.
-- `vagrant destroy [-f]`: Destroy VMs.
-- `vagrant validate`: Check the validity of the config file.
+You will learn how to set up a personal virtual machine with `Vagrant` and the
+distribution of your choice. Then, you will learn how to use `K3s` and its `Ingress`.
 
-```bash
-# To delete all the VMs
-VBoxManage list vms | awk -F'"' '{print $2}' | while read vm; do VBoxManage unregistervm "$vm" --delete; done
-```
+Last but not least, you will discover `K3d` that will simplify your life.
+
+## P1
+
+In the p1, you will learn how to set up a personal virtual machine with `Vagrant` and the distribution of your choice. Then, you will learn how to use `K3s` in
+server mode and agent mode.
 
 ```bash
-# Faster download speed
-vagrant plugin install vagrant-cachier 
+## to launch the p1
+vagrant up
+
+## connect with ssh via the name of the VM
+vagrant ssh $NAME
 ```
 
 > For the SSH connection, use the private key in the .vagrant folder, located at:
@@ -30,65 +29,83 @@ ssh -i .vagrant/machines/bapasquiS/virtualbox/private_key vagrant@192.168.56.110
 ssh -i .vagrant/machines/bapasquiSW/virtualbox/private_key vagrant@192.168.56.111
 ```
 
-```bash
-# Launch the project on the main PC (this could take a while), this will slow down your computer like crazy
-NIXPKGS_ALLOW_UNFREE=1 nix-shell flake.nix
-```
+1. **K3s**: Lightweight Kubernetes distribution.
+2. **Vagrant**: Tool for building and managing virtual machine environments in a single workflow.
 
 ## P2
 
-- Create a cluster: `k3d cluster create NAME [flags]` or `kubectl create namespace NAME`.
-- Create 3 pods (app1, app2, app3) with the YAML file (example: [config](https://gist.githubusercontent.com/fransafu/4075cdcaf2283ca5650e71c7fd8335cb/raw/19d7cfa0f82f1b66af6e39389073bcb0108c494c/simple-rest-golang.yaml)).
-- Apply the YAML file: `k3s kubectl apply -f config.yaml`.
+In this second part, you will learn how to use `k3s`, `Ingress`, and all terms related to Kubernetes.
 
 ```bash
-k get all
-kubectl describe ingress apps-ingress
-kubectl -n kube-system logs -l app.kubernetes.io/name=traefik
+## to launch the p2
+vagrant up
+
+## to get the ingress
+kubectl get ingress -o wide
 ```
 
 ```bash
-# Setup domain local name
-192.168.56.110 app1.local
-192.168.56.110 app2.local
-192.168.56.110 app3.local
+# Setup domain local name in /etc/hosts
+# might need to use .local since .com already in use by a real domain
+192.168.56.110 app1.com
+192.168.56.110 app2.com
+192.168.56.110 app3.com
 ```
-
-### Summary of their roles in Kubernetes:
-
 1. **Pod**: Group of containers that run your application.
 2. **Deployment**: Manages and automates the creation and management of Pods via a ReplicaSet.
 3. **ReplicaSet**: Ensures the correct number of Pods are running.
 4. **Service**: Connects the Pods to each other or to the outside world.
+5. **Ingress** : Exposes HTTP and HTTPS routes from outside the cluster to services within the cluster.
 
-[The Webpage](https://github.com/paulbouwer/hello-kubernetes)
-
+[The Webpage for the Deployment](https://github.com/paulbouwer/hello-kubernetes)
 
 ## P3
 
-- Install `K3D` and `docker`
-- Create two namespace : 
-    1. one for ArgoCD
-    2. second one name ***dev*** will contain an application (on Github for versionning)
+In this last part, you will learn how to use `K3d` and `ArgoCD` to deploy your application.
 
-1: 
 ```bash
-## to install docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-sudo apt-get update && sudo apt-get install -y docker-ce
-sudo usermod -aG docker $USER
+## to launch the p3
+sudo bash scripts/start.sh
 
-## to install k3s
-curl -sfL https://get.k3s.io | sh -
+# get the name of the pod
+kubectl get pods -n dev
 
-## to install k3d
-wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install sh | bash
+#port-forward for curl
+kubectl port-forward -n dev pod/<pod-name> 8888:8888
 ```
 
-2 : 
+1. **ArgoCD**: Continuous Delivery tool for Kubernetes.
+2. **v2** and **v1** are the two versions of the application.
+3. **k3d** is a lightweight wrapper to run k3s (Rancher Lab's minimal Kubernetes distribution) in Docker.
+4. **K3s** is a lightweight Kubernetes distribution.
+
+## Bonus
+
+In the bonus part, you should setup a `Gitlab` instance and deploy the application with `ArgoCD`.
+
 ```bash
-# setup namespaces
-kubectl create namespace dev
-kubectl create namespace argocd
+## to launch the bonus (and p3 argocd)
+sudo bash bonus/scripts/start.sh
+
+## to stop the bonus and delete
+sudo bash bonus/scripts/delete.sh
 ```
+The creation of the repository is done automatically by the script `bonus/scripts/start.sh`.
+The repo will be name `test` and the user `root`.
+
+To make `ArgoCD` use the repo on the `gitlab` use the following command:
+
+```bash
+# this will update the ip and push the p3 to the gitlab repo
+sudo bash bonus/scripts/update_argoc.sh
+```
+
+## COMMANDS
+
+- `vagrant up` : Launch the VMs in listed in the Vagrantfile
+- `vagrant  destroy [-f]` : Delete all VMs listed in the Vagrantfile
+- `vboxmanage list vms` : lists all VMs in virtualbox
+- `vagrant provision` : Update the VM with the modifications in the Vagrantfile. 
+- `kubectl get nodes` : List all the nodes.
+- `vagrant reload` : Delete all machines and re-up them.
+- `vagrant halt` : Shutdown the VM linked to the Vagrantfile.
